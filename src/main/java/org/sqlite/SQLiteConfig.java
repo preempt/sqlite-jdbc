@@ -277,7 +277,7 @@ public class SQLiteConfig
         CASE_SENSITIVE_LIKE("case_sensitive_like", OnOff),
         COUNT_CHANGES("count_changes", OnOff),
         DEFAULT_CACHE_SIZE("default_cache_size"),
-	DEFER_FOREIGN_KEYS("defer_foreign_keys", OnOff),
+	    DEFER_FOREIGN_KEYS("defer_foreign_keys", OnOff),
         EMPTY_RESULT_CALLBACKS("empty_result_callback", OnOff),
         ENCODING("encoding", toStringArray(Encoding.values())),
         FOREIGN_KEYS("foreign_keys", OnOff),
@@ -308,7 +308,8 @@ public class SQLiteConfig
         DATE_STRING_FORMAT("date_string_format", "Format to store and retrieve dates stored as text. Defaults to \"yyyy-MM-dd HH:mm:ss.SSS\"", null),
         BUSY_TIMEOUT("busy_timeout", null),
         HEXKEY_MODE("hexkey_mode", toStringArray(HexKeyMode.values())),
-        PASSWORD("password", null);
+        PASSWORD("password", null),
+        SOFT_HEAP_LIMIT("soft_heap_limit");
 
         public final String   pragmaName;
         public final String[] choices;

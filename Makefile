@@ -80,7 +80,7 @@ $(SQLITE_OUT)/sqlite3.o : $(SQLITE_UNPACKED)
 	    -DSQLITE_ENABLE_RTREE \
 	    -DSQLITE_ENABLE_STAT2 \
 	    -DSQLITE_THREADSAFE=1 \
-	    -DSQLITE_DEFAULT_MEMSTATUS=0 \
+	    -DSQLITE_DEFAULT_MEMSTATUS=1 \
 	    -DSQLITE_DEFAULT_FILE_PERMISSIONS=0666 \
 	    -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
 	    -DSQLITE_MAX_MMAP_SIZE=1099511627776 \
@@ -104,7 +104,7 @@ NATIVE_DLL:=$(NATIVE_DIR)/$(LIBNAME)
 
 # For cross-compilation, install docker. See also https://github.com/dockcross/dockcross
 # Disabled linux-armv6 build because of this issue; https://github.com/dockcross/dockcross/issues/190
-native-all: native win32 win64 mac64 linux32 linux64 linux-arm linux-armv7 linux-arm64 linux-android-arm linux-ppc64
+native-all: native win64 mac64 linux64
 
 native: $(NATIVE_DLL)
 
@@ -116,48 +116,14 @@ $(NATIVE_DLL): $(SQLITE_OUT)/$(LIBNAME)
 
 DOCKER_RUN_OPTS=--rm
 
-win32: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-windows-x86 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
-
 win64: $(SQLITE_UNPACKED) jni-header
 	./docker/dockcross-windows-x64 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
-
-linux32: $(SQLITE_UNPACKED) jni-header
-	docker run $(DOCKER_RUN_OPTS) -ti -v $$PWD:/work xerial/centos5-linux-x86 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
 
 linux64: $(SQLITE_UNPACKED) jni-header
 	docker run $(DOCKER_RUN_OPTS) -ti -v $$PWD:/work xerial/centos5-linux-x86_64 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86_64'
 
-alpine-linux64: $(SQLITE_UNPACKED) jni-header
-	docker run $(DOCKER_RUN_OPTS) -ti -v $$PWD:/work xerial/alpine-linux-x86_64 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86_64'
-
-linux-arm: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-armv5 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=/usr/xcc/armv5-unknown-linux-gnueabi/bin/armv5-unknown-linux-gnueabi- OS_NAME=Linux OS_ARCH=arm'
-
-linux-armv6: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-armv6 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=arm-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
-
-linux-armv7: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-armv7 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=/usr/xcc/armv7-unknown-linux-gnueabi/bin/armv7-unknown-linux-gnueabi- OS_NAME=Linux OS_ARCH=armv7'
-
-linux-arm64: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-arm64 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi- OS_NAME=Linux OS_ARCH=aarch64'
-
-linux-android-arm: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-android-arm -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=/usr/arm-linux-androideabi/bin/arm-linux-androideabi- OS_NAME=Linux OS_ARCH=android-arm'
-
-linux-ppc64: $(SQLITE_UNPACKED) jni-header
-	./docker/dockcross-ppc64 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=powerpc64le-linux-gnu- OS_NAME=Linux OS_ARCH=ppc64'
-
 mac64: $(SQLITE_UNPACKED) jni-header
 	docker run -it $(DOCKER_RUN_OPTS) -v $$PWD:/workdir -e CROSS_TRIPLE=x86_64-apple-darwin multiarch/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86_64
-
-# deprecated
-mac32: $(SQLITE_UNPACKED) jni-header
-	docker run -it $(DOCKER_RUN_OPTS) -v $$PWD:/workdir -e CROSS_TRIPLE=i386-apple-darwin multiarch/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86
-
-sparcv9:
-	$(MAKE) native OS_NAME=SunOS OS_ARCH=sparcv9
 
 package: native-all
 	rm -rf target/dependency-maven-plugin-markers
@@ -177,8 +143,3 @@ clean-tests:
 docker-linux64:
 	docker build -f docker/Dockerfile.linux_x86_64 -t xerial/centos5-linux-x86_64 .
 
-docker-linux32:
-	docker build -f docker/Dockerfile.linux_x86 -t xerial/centos5-linux-x86 .
-
-docker-alpine-linux64:
-	docker build -f docker/Dockerfile.alpine-linux_x86_64 -t xerial/alpine-linux-x86_64 .

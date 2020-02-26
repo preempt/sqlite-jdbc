@@ -65,6 +65,11 @@ public final class NativeDB extends DB
         return loadSucceeded;
     }
 
+    public static long get_used_memory_for_process() throws Exception {
+        NativeDB.load();
+        return NativeDB.get_used_memory();
+    }
+
     /** linked list of all instanced UDFDatas */
     private final long udfdatalist = 0;
 
@@ -412,6 +417,8 @@ public final class NativeDB extends DB
     public synchronized int create_function(String name, Function func, int nArgs, int flags) {
         return create_function_utf8(stringToUtf8ByteArray(name), func, nArgs, flags);
     }
+
+    private static native long get_used_memory();
 
     native synchronized int create_function_utf8(byte[] nameUtf8, Function func, int nArgs, int flags);
 
